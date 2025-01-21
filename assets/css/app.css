@@ -1,0 +1,100 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+/* This file is for your main application CSS */
+
+html body {
+    margin: 0;
+    overflow: hidden;
+    background-color: rgb(25, 17, 61);
+
+    font-family: "Barlow",serif;
+}
+
+#spiral-bg {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+
+    left: 0;
+    top:0;
+
+    background-image: url("/images/spiral.webp");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+
+
+    filter: contrast(70%) sepia(95%) hue-rotate(260deg) saturate(498%) brightness(240.6%);
+
+    animation: 10s linear 0s infinite reverse both running spiral-animation;
+}
+
+/* CRT effect */
+#crt {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 3px,
+        transparent 3px,
+        transparent 4px
+    );
+    pointer-events: none;
+    filter: url(#chromatic);
+}
+
+
+@keyframes spiral-animation {
+    from {
+        transform: rotateZ(0deg) scale(2.6);
+    }
+    to {
+        transform: rotateZ(360deg) scale(2.6);
+    }
+}
+
+#main-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+main {
+    padding: 1em;
+    background-color:#0f4c8f;
+    width: 50vw;
+    min-width: 20em;
+    height: 20em;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 5px 5px 4px rgb(56, 0, 0);
+}
+
+#title {
+    height: 2em;
+    width: 100%;
+    text-align: center;
+    font-size: 2.5em;
+    font-size-adjust: cap-height 0.73;
+    font-kerning: none;
+    color: peachpuff;
+}
+
+time {
+    width: 100%;
+    text-align: center;
+    font-size: 3.5em;
+    font-size-adjust: cap-height 0.73;
+    font-kerning: none;
+    color: peachpuff
+}
