@@ -40,7 +40,7 @@ defmodule Hackathon.MessageRepo do
   def handle_cast(:pop, state) do
     new_state = case state do
       [] -> []
-      [_ | t] -> t
+      xs -> xs |> Enum.reverse() |> tl() |> Enum.reverse()
     end
     PubSub.broadcast(Hackathon.PubSub, "messages", {:message_update, new_state})
     {:noreply, new_state}

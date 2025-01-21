@@ -16,6 +16,7 @@ defmodule Hackathon.Application do
       {DNSCluster, query: Application.get_env(:hackathon, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Hackathon.PubSub},
       Hackathon.MessageRepo,
+      Hackathon.EventRepo,
       # Start a worker by calling: Hackathon.Worker.start_link(arg)
       # {Hackathon.Worker, arg},
       # Start to serve requests, typically the last entry

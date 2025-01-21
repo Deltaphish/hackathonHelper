@@ -2,25 +2,28 @@ defmodule HackathonWeb.MainLive do
   use HackathonWeb, :live_view
   alias Phoenix.PubSub
 
-
-  @event_start DateTime.new!(~D[2024-02-24], ~T[15:00:00.000], "Europe/Stockholm")
-  @event_end DateTime.new!(~D[2025-01-21], ~T[23:50:50.000], "Europe/Stockholm")
+  import Hackathon.Event
 
   @impl true
   def mount(_params, _session, socket) do
     PubSub.subscribe(Hackathon.PubSub, "messages")
+    PubSub.subscribe(Hackathon.PubSub, "time_update")
+
     messages = Hackathon.MessageRepo.get_messages()
+    timeslot = Hackathon.EventRepo.get()
+
 
     {:ok, current_date} = DateTime.now("Europe/Stockholm")
 
-    if DateTime.compare(current_date, @event_start) == :lt do
+    if DateTime.compare(current_date, event(timeslot, :start)) == :lt do
       {:ok, push_navigate(socket, to: "/")}
     else
-      {_time_to_next_poll_ms, deadline_string} = time_to(current_date, @event_end)
+      {_time_to_next_poll_ms, deadline_string} = time_to(current_date, event(timeslot, :end))
       Process.send_after(self(),:tick, 10)
       {:ok, socket |> assign(to_deadline: deadline_string)
                    |> assign(unread_messages: 0)
                    |> assign(messages: messages)
+                   |> assign(timeslot: timeslot)
                    |> assign(active_tab: "deadline")}
     end
   end
@@ -47,10 +50,21 @@ defmodule HackathonWeb.MainLive do
     {:noreply, assign(socket, messages: messages)}
   end
 
+
+  @impl true
+  def handle_info({:time_update, time_slot}, socket) do
+    {:ok, current_date} = DateTime.now("Europe/Stockholm")
+    {_, deadline_string} = time_to(current_date, event(time_slot, :end))
+    {:noreply, socket
+      	        |> assign(timeslot: time_slot)
+                |> assign(to_deadline: deadline_string)}
+  end
+
   @impl true
   def handle_info(:tick, socket) do
     {:ok, current_date} = DateTime.now("Europe/Stockholm")
-    {time_to_next_poll_ms, deadline_string} = time_to(current_date, @event_end)
+    time_slot = socket.assigns[:timeslot]
+    {time_to_next_poll_ms, deadline_string} = time_to(current_date, event(time_slot, :end))
     if time_to_next_poll_ms == 0 do
       {:noreply, assign(socket, to_deadline: deadline_string)}
     else
