@@ -14,7 +14,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        brand: "#FD4F00",
+        galaxy: "#000735",
+        rose: "#eab8b2",
+        black: "#231f20",
+        orange: "#dd5928",
+        blue: "#0f4c81",
+        chive: "#00966d",
+        yellow: "#f9e79f",
+        biscay: "#00b3b0",
+        purple: "#440845",
+        stone: "#e3d9d7",
       }
     },
   },

@@ -7,7 +7,9 @@ defmodule HackathonWeb.WelcomeLive do
 
   def render(assigns) do
     ~H"""
-      <time class="text-3xl">{@event_start}</time>
+      <div class="flex h-full justify-center flex-col ">
+        <time class="text-3xl">{@event_start}</time>
+      </div>
     """
   end
 

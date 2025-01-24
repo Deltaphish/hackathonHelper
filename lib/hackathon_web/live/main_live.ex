@@ -76,38 +76,37 @@ defmodule HackathonWeb.MainLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-4">
-      <nav class="flex justify-around bg-fuchsia-900">
+    <div class="mx-4 text-white relative h-full mt-2">
+      <nav class="flex justify-around bg-galaxy text-rose mb-8">
       <button
             phx-click="change_tab"
             phx-value-tab="rules"
-            class={"px-4 py-2 border-b-2 text-sm font-medium #{if @active_tab == "rules", do: "border-blue-500 text-blue-600", else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}"}
+            class={"w-1/3 px-2 py-2 border-b-2 text-sm font-medium #{if @active_tab == "rules", do: "border-blue-500", else: "border-transparent hover:border-gray-300"}"}
        >Rules</button>
        <button
             phx-click="change_tab"
             phx-value-tab="deadline"
-            class={"px-4 py-2 border-b-2 text-sm font-medium #{if @active_tab == "deadline", do: "border-blue-500 text-blue-600", else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}"}
+            class={"w-1/3 px-2 py-2 border-b-2 text-sm font-medium #{if @active_tab == "deadline", do: "border-blue-500", else: "border-transparent hover:border-gray-300"}"}
        >Deadline</button>
        <button
             phx-click="change_tab"
             phx-value-tab="messages"
-            class={"px-4 py-2 border-b-2 text-sm font-medium #{if @active_tab == "messages", do: "border-blue-500 text-blue-600", else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}"}
-       >Messages({@unread_messages})</button>
+            class={"w-1/3 px-2 py-2 border-b-2 text-sm font-medium #{if @active_tab == "messages", do: "border-blue-500", else: "border-transparent hover:border-gray-300"}"}
+       >Messages<span class={"#{if @unread_messages > 0, do: "text-orange" , else: "" }"}>({@unread_messages})</span></button>
       </nav>
       <%= case @active_tab do %>
       <% "deadline" -> %>
-        <p>{@to_deadline}</p>
+        <p class="text-center">{@to_deadline}</p>
       <% "rules" ->  %>
         <ol class="list-decimal">
-          <li>Teams must consist of 2-5 members</li>
-          <li>For a team to be eligble for prizes they must be ready to present a "pitch" before the deadline</li>
-          <li>A "pitch" must consist of a short 1-2 minute presentation, and a demonstration of a <abbr title="Minimal Viable Product">MVP</abbr></li>
-          <li>All work related to the "pitch" must be conducted in the Cygni office</li>
-          <li>The pitch must be "safe for work". If you are unsure please check with a host</li>
+          <li>Talk about the hackathon</li>
+          <li>Have fun</li>
           <li>The hosts reserve the right to interpret, apply, and modify these rules at whim</li>
         </ol>
       <% "messages" -> %>
-        <p :for={message <- @messages}>{message}</p>
+        <div class="overflow-auto h-3/4 mt-2 flex flex-col-reverse pb-2 ">
+          <p :for={message <- @messages}>{message}</p>
+        </div>
       <% end %>
     </div>
     """
