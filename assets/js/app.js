@@ -21,6 +21,7 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
+import {corruptTitle} from "./corrupt.js"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {
@@ -43,44 +44,113 @@ liveSocket.connect()
 window.liveSocket = liveSocket
 
 
-
 var corruption_state = [];
+setInterval(() => {corruption_state = corruptTitle(corruption_state)}, 2000)
 
-export function corruptTitle() {
+var gl = document.querySelector("#bg").getContext("webgl2");
 
-  const title = document.getElementById("title");
+var vertexShader = createShader(gl, gl.VERTEX_SHADER, document.querySelector("#vs").textContent.trim());
+var fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, document.querySelector("#fs").textContent.trim());
 
-  if(title === null) {return}
+var program = createProgram(gl, vertexShader, fragmentShader);
+var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+var positionBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+var positions = [
+  -1, 1,
+  -1,-1,
+  1, -1,
+  1, -1,
+  1, 1,
+  -1, 1
+];
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+var vao = gl.createVertexArray();
+gl.bindVertexArray(vao);
+gl.enableVertexAttribArray(positionAttributeLocation);
+
+var size = 2;          // 2 components per iteration
+var type = gl.FLOAT;   // the data is 32bit floats
+var normalize = false; // don't normalize the data
+var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+var offset = 0;        // start at the beginning of the buffer
+gl.vertexAttribPointer(
+    positionAttributeLocation, size, type, normalize, stride, offset)
+
+const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+const timeLocation = gl.getUniformLocation(program, "u_time");
 
 
-  const alpha = 1.5;
+let start;
 
-  const title_text = "CYGNI HACKATHON";
-  const corrupted_text = "¢γ6∩1ーң∀ℂ⏧ｧ⊥Ħ∘ℕ";
-  const corruption = Array.from({length: title_text.length}, () => Math.floor(Math.random() * title_text.length * alpha));
+function render(time) {
 
-  if(corruption_state.length == 0) {
-    corruption_state = Array.from({length: title_text.length}, () => 0);
+  if(start === undefined) {
+    start = time;
   }
 
+  const elapsed = time - start;
 
-  var result = ""
-  for(var i = 0; i < title_text.length; i++) {
-      
-      if(corruption[i] == 0) {
-          corruption_state[i] = 2 + Math.floor(Math.random() * 3);
-      } else {
-          corruption_state[i] = Math.max(0, corruption_state[i] - 1);
-      }
+  resizeCanvasToDisplaySize(gl.canvas);
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  gl.clearColor(234, 184, 178, 255);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.useProgram(program);
+  gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
+  gl.uniform1f(timeLocation, elapsed*0.1);
 
-      if(corruption_state[i] != 0) {
-          result += corrupted_text.charAt(i);
-      } else {
-          result += title_text.charAt(i);
-      }
-  }
-  title.textContent = result;
+  gl.bindVertexArray(vao);
+  var primitiveType = gl.TRIANGLES;
+  var offset = 0;
+  var count = 6;
+  gl.drawArrays(primitiveType, offset, count);
+  requestAnimationFrame(render)  
 }
-setInterval(corruptTitle, 2000)
+
+requestAnimationFrame(render)  
 
 
+function createProgram(gl, vertexShader, fragmentShader) {
+  var program = gl.createProgram();
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+  if (success) {
+    return program;
+  }
+ 
+  console.log(gl.getProgramInfoLog(program));
+  gl.deleteProgram(program);
+}
+
+function createShader(gl, type, source) {
+  var shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+  if (success) {
+    return shader;
+  }
+ 
+  console.log(gl.getShaderInfoLog(shader));
+  gl.deleteShader(shader);
+}
+
+function resizeCanvasToDisplaySize(canvas) {
+  // Lookup the size the browser is displaying the canvas in CSS pixels.
+  const dpr = window.devicePixelRatio;
+  const displayWidth  = Math.round(canvas.clientWidth * dpr);
+  const displayHeight = Math.round(canvas.clientHeight * dpr); 
+  // Check if the canvas is not the same size.
+  const needResize = canvas.width  !== displayWidth ||
+                     canvas.height !== displayHeight;
+ 
+  if (needResize) {
+    // Make the canvas the same size
+    canvas.width  = displayWidth;
+    canvas.height = displayHeight;
+  }
+ 
+  return needResize;
+}

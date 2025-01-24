@@ -17,30 +17,59 @@
     </script>
   </head>
   <body>
-    <svg width="0" height="0">
-    <filter id="chromatic">
-      <feColorMatrix type="matrix" 
-        result="red_"             
-        values="4 0 0 0 0
-                0 0 0 0 0 
-                0 0 0 0 0 
-                0 0 0 1 0"/>
-      <feOffset in="red_" dx="2" dy="0" result="red"/>
-      <feColorMatrix type="matrix" 
-        in="SourceGraphic"             
-        result="blue_"             
-        values="0 0 0 0 0
-                0 3 0 0 0 
-                0 0 10 0 0 
-                0 0 0 1 0"/>
-      <feOffset in="blue_" dx="-3" dy="0" result="blue"/>    
-      <feBlend mode="screen" in="red" in2="blue"/>
-
-    </filter>
-    </svg>
+    <canvas id="bg" class="absolute w-screen h-screen top-0"></canvas>
     {@inner_content}
-    <div role="presentation" id="crt">
-      <div role="presentation" id="spiral-bg"></div>
-    </div>
   </body>
+  <script id="vs" type="notjs">
+  #version 300 es
+     
+    // an attribute is an input (in) to a vertex shader.
+    // It will receive data from a buffer
+    in vec4 a_position;
+     
+    // all shaders have a main function
+    void main() {
+     
+      // gl_Position is a special variable a vertex shader
+      // is responsible for setting
+      gl_Position = a_position;
+    }
+  </script>
+    <script id="fs" type="notjs">
+    #version 300 es
+     
+    // fragment shaders don't have a default precision so we need
+    // to pick one. highp is a good default. It means "high precision"
+    precision highp float;
+
+    uniform vec2 u_resolution;
+    uniform float u_time;
+     
+    // we need to declare an output for the fragment shader
+    out vec4 outColor;
+     
+
+    void main() {
+
+      float d = 0.2;
+
+      float t = u_time/1000.;
+
+      vec2 st = gl_FragCoord.xy/u_resolution;
+
+      st -= vec2(0.5,0.5);
+
+      float r = length(st);
+      float phi = atan(st.y,st.x);
+
+      float c = mod((r-phi/(2.0*3.14)*d) - t, d);
+      float fac = (smoothstep(c-0.05,c,0.2)-smoothstep(c,c+0.001,0.1));
+
+      vec3 color = normalize(vec3(0.0,7.0,53.0))*0.26*(1.0-fac) + normalize(vec3(234.,184.,178.))*1.1*fac;
+
+      // Plot a line
+
+      outColor = vec4(color,1.0);
+    }
+  </script>
 </html>
