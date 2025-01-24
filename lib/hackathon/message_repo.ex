@@ -30,7 +30,7 @@ defmodule Hackathon.MessageRepo do
   @impl true
   def handle_cast({:send, message}, state) do
     {:ok, current_date} = DateTime.now("Europe/Stockholm")
-    new_state = state ++ ["[#{current_date.hour}:#{current_date.minute}] #{message}"]
+    new_state = ["[#{current_date.hour}:#{current_date.minute}] #{message}" | state]
     PubSub.broadcast(Hackathon.PubSub, "messages", {:message_update, new_state})
     {:noreply, new_state}
   end
